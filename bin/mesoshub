@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'sinatra'
+
+__LIB_DIR__ = File.expand_path(File.dirname(__FILE__)+"/../lib")
+$LOAD_PATH.unshift __LIB_DIR__ unless $LOAD_PATH.include?(__LIB_DIR__)
+require 'mesoshub'
+Mesoshub::Webapp.run!
