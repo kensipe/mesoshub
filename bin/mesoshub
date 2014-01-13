@@ -1,8 +1,31 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-require 'sinatra'
+require 'trollop'
 
 __LIB_DIR__ = File.expand_path(File.dirname(__FILE__)+"/../lib")
 $LOAD_PATH.unshift __LIB_DIR__ unless $LOAD_PATH.include?(__LIB_DIR__)
 require 'mesoshub'
+
+CONFIG = Trollop::options do
+  version Mesoshub::VERSION
+  banner <<-EOS
+Usage: mesoshub --marathon http://host:port --zookeeper host1:port1,host2:port2
+EOS
+  opt :marathon,  "Marathon URL",            :type => :string
+  opt :zookeeper, "Zookeeper hosts string" , :type => :string
+end
+Trollop::die :marathon,  "must point to the marathon service http://host:port"         if CONFIG[:marathon].nil?
+Trollop::die :zookeeper, "must point to the zookeeper service host1:port1,host2:port2" if CONFIG[:zookeeper].nil?
+
+module Mesoshub
+  class Webapp
+    configure do
+      set :marathon, Mesoshub::Marathon.new(CONFIG[:marathon])
+      set :zookeeper, Mesoshub::Zookeeper.new(CONFIG[:zookeeper])
+      set :haproxy, Mesoshub::Haproxy.new
+    end
+  end
+end
+
+#require 'sinatra'
 Mesoshub::Webapp.run!

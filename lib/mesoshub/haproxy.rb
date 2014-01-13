@@ -1,12 +1,33 @@
 module Mesoshub
-  class HaproxyConfig
-    attr_accessor :endpoints, :groups
+  class Haproxy
+    attr_accessor :endpoints, :app_groups
 
-    def initialize(endpoints, groups)
+    def update_endpoints(endpoints)
       @endpoints = endpoints
-      @groups = groups
     end
 
+    def update_app_groups(app_groups)
+      @app_groups = app_groups
+    end
+
+    def write_config
+      raise "add endpoints or app_groups first" if @endpoints.nil? && @app_groups.nil?
+      system("cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.old")
+      File.open("/etc/haproxy/haproxy.cfg", "w") do |file|
+        file << generate_config
+      end
+    end
+
+    def safe_reload
+      system("/etc/init.d/haproxy reload")
+      # if something goes wrong, cp /etc/haproxy/haproxy.cfg.old and restart
+      # airbnb's synapse
+      # res = `#{opts['reload_command']}`.chomp
+      # raise "failed to reload haproxy via #{opts['reload_command']}: #{res}" unless $?.success?
+      #system("sudo /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -sf $(cat /var/run/haproxy.pid)")
+    end
+
+    private
     def generate_config
       configuration = [defaults, listen_defaults, listen_groups, listen_apps].join("\n\n")
       configuration
@@ -60,17 +81,17 @@ EOF
     end
 
     def listen_groups
-      output = groups.keys.reduce("#MESOS Application Groups\n") do |acum, app_group|
+      output = app_groups.keys.reduce("#MESOS Application Groups\n") do |acum, app_group|
          acum += <<"EOF"
 listen #{app_group}
-  bind 0.0.0.0:#{groups[app_group]["port"]}
+  bind 0.0.0.0:#{app_groups[app_group]["port"]}
   mode http
   option tcplog
   option httpchk GET /
   balance leastconn
 EOF
          i = 0
-         groups[app_group]["apps"].each do |app_name|
+         app_groups[app_group]["apps"].each do |app_name|
            acum += endpoints[app_name]["servers"].reduce("") do |a, server|
              a += "  server #{app_name}-#{i} #{server} check weight 1\n"
              i += 1

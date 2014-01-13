@@ -22,6 +22,7 @@ module Mesoshub
     end
 
     def app_groups=(app_groups)
+      #raise unless is_valid(app_groups)
       existing_groups = @zk.children("/mesoshub/app_groups")
       deleted_groups = existing_groups - app_groups.keys
       deleted_groups.each do |group|
@@ -37,7 +38,6 @@ module Mesoshub
         end
       end
     end
-
 
   end
 end
