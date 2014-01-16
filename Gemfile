@@ -5,3 +5,5 @@ gem 'mocha'
 gem 'webmock'
 gem 'sinatra'
 gem 'trollop'
+
+gem 'minitest'

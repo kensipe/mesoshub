@@ -8,6 +8,10 @@ module Mesoshub
 
     set :protection, :except => [:http_origin]
 
+    get "/" do
+      redirect '/index.html'
+    end
+
     post "/events" do
       payload = request.body.read
       message = JSON.parse(payload)
@@ -19,22 +23,22 @@ module Mesoshub
       settings.marathon.endpoints.to_json
     end
 
-    get "/app_groups" do
-      settings.zookeeper.app_groups.to_json
+    get "/groups" do
+      settings.zookeeper.groups.to_json
     end
 
-    post "/app_groups" do
+    post "/groups" do
       payload = request.body.read
-      new_app_groups = JSON.parse(payload)
-      #remember to validate app_groups
-      settings.zookeeper.app_groups = new_app_groups
+      new_groups = JSON.parse(payload)
+      #remember to validate groups
+      settings.zookeeper.groups = new_groups
       restart_haproxy #if $zookeeper.valid?
       {"status" => "success"}.to_json
     end
 
     def restart_haproxy
       settings.haproxy.update_endpoints(settings.marathon.endpoints)
-      settings.haproxy.update_app_groups(settings.zookeeper.app_groups)
+      settings.haproxy.update_groups(settings.zookeeper.groups)
       settings.haproxy.write_config
       settings.haproxy.safe_reload
     end

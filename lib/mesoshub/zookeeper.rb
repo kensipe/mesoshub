@@ -4,33 +4,33 @@ module Mesoshub
     def initialize(zookeeper_hosts="localhost:2181")
       @zk = ZK.new(zookeeper_hosts)
       @zk.create("/mesoshub") unless @zk.exists?("/mesoshub")
-      @zk.create("/mesoshub/app_groups") unless @zk.exists?("/mesoshub/app_groups")
+      @zk.create("/mesoshub/groups") unless @zk.exists?("/mesoshub/groups")
     end
 
-    def app_groups
-      app_groups =  @zk.children("/mesoshub/app_groups").reduce({}) do |acum, group|
+    def groups
+      groups =  @zk.children("/mesoshub/groups").reduce([]) do |acum, group|
         begin
-          payload = @zk.get("/mesoshub/app_groups/#{group}")
+          payload = @zk.get("/mesoshub/groups/#{group}")
         rescue ZK::Exceptions::NoNode
           next
         end
         if payload && payload.kind_of?(Array) && !payload[0].nil?
-          acum[group] = JSON.load(@zk.get("/mesoshub/app_groups/#{group}")[0])
+          acum.push(JSON.load(@zk.get("/mesoshub/groups/#{group}")[0]))
         end
         acum
       end
     end
 
-    def app_groups=(app_groups)
-      #raise unless is_valid(app_groups)
-      existing_groups = @zk.children("/mesoshub/app_groups")
-      deleted_groups = existing_groups - app_groups.keys
+    def groups=(groups)
+      #raise unless is_valid(groups)
+      existing_groups = @zk.children("/mesoshub/groups")
+      deleted_groups = existing_groups - groups.map{|x| x["name"]}
       deleted_groups.each do |group|
-        @zk.delete("/mesoshub/app_groups/#{group}")
+        @zk.delete("/mesoshub/groups/#{group}")
       end
-      app_groups.keys.each do |group|
-        key = "/mesoshub/app_groups/%s" % group
-        payload = JSON.dump(app_groups[group])
+      groups.map do |group|
+        key = "/mesoshub/groups/%s" % group["name"]
+        payload = JSON.dump(group)
         if @zk.exists?(key)
           @zk.set(key, payload)
         else

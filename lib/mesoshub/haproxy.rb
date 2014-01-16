@@ -1,17 +1,21 @@
 module Mesoshub
   class Haproxy
-    attr_accessor :endpoints, :app_groups
+    attr_accessor :endpoints, :endpoints_lookup, :groups
 
     def update_endpoints(endpoints)
       @endpoints = endpoints
+      @endpoints_lookup = endpoints.reduce({}) do |acum, ep|
+        acum[ep["name"]] = {"port" => ep["port"], "servers" => ep["servers"]}
+        acum
+      end
     end
 
-    def update_app_groups(app_groups)
-      @app_groups = app_groups
+    def update_groups(groups)
+      @groups = groups
     end
 
     def write_config
-      raise "add endpoints or app_groups first" if @endpoints.nil? && @app_groups.nil?
+      raise "add endpoints or groups first" if @endpoints.nil? && @groups.nil?
       system("cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.old")
       File.open("/etc/haproxy/haproxy.cfg", "w") do |file|
         file << generate_config
@@ -81,41 +85,46 @@ EOF
     end
 
     def listen_groups
-      output = app_groups.keys.reduce("#MESOS Application Groups\n") do |acum, app_group|
-         acum += <<"EOF"
-listen #{app_group}
-  bind 0.0.0.0:#{app_groups[app_group]["port"]}
+      output = groups.each.reduce("#MESOS Application Groups\n") do |acum, group|
+        #does the endpoint app exist?
+        if group["apps"].reject{|g| endpoints_lookup[g]}.size < group["apps"].size
+          acum += <<"EOF"
+listen #{group["name"]}
+  bind 0.0.0.0:#{group["port"]}
   mode http
   option tcplog
   option httpchk GET /
   balance leastconn
 EOF
-         i = 0
-         app_groups[app_group]["apps"].each do |app_name|
-           acum += endpoints[app_name]["servers"].reduce("") do |a, server|
-             a += "  server #{app_name}-#{i} #{server} check weight 1\n"
-             i += 1
-             a
-           end
-         end
-         acum
-       end
-       output
+          i = 0
+          group["apps"].each do |name|
+            if endpoints_lookup[name]
+              acum += endpoints_lookup[name]["servers"].reduce("") do |a, server|
+                a += "  server #{name}-#{i} #{server} check weight 1\n"
+                i += 1
+                a
+              end
+            end
+          end
+        end
+        acum
+      end
+      output
     end
 
     def listen_apps
-      output = endpoints.keys.reduce("#MESOS Applications\n") do |acum, app_name|
+      output = endpoints.each.reduce("#MESOS Applications\n") do |acum, endpoint|
          acum += <<"EOF"
-listen #{app_name}
-  bind 0.0.0.0:#{endpoints[app_name]["port"]}
+listen #{endpoint["name"]}
+  bind 0.0.0.0:#{endpoint["port"]}
   mode http
   option tcplog
   option httpchk GET /
   balance leastconn
 EOF
          i = 0
-         acum += endpoints[app_name]["servers"].reduce("") do |a, server|
-           a += "  server #{app_name}-#{i} #{server} check \n"
+         acum += endpoint["servers"].reduce("") do |a, server|
+           a += "  server #{endpoint["name"]}-#{i} #{server} check \n"
            i += 1
            a
          end

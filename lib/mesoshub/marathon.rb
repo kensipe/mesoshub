@@ -21,9 +21,10 @@ module Mesoshub
         sleep 1
         retry unless (tries -= 1).zero?
       end
-      endpoints = ep.split("\n").reduce({}) do |acum, item|
+      endpoints = ep.split("\n").reduce([]) do |acum, item|
         parts = item.split(" ")
-        acum[parts[0]] = { "port" => parts[1], "servers" => parts[2..-1]}
+        realname = parts[0].split("_")[0..-2].join("_")
+        acum.push({"name" => realname, "port" => parts[1], "servers" => parts[2..-1]})
         acum
       end
       endpoints
