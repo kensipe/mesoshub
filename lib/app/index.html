@@ -1,1 +1,177 @@
-<h1>Pablo</h1>
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Mesoshub</title>
+  <!-- load the bootstrap stylesheet -->
+  <link href="css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
+  <!-- load the libraries we need -->
+  <script type="text/javascript" src="js/libs/jquery.min.js"></script>
+  <script type="text/javascript" src="js/libs/underscore.min.js"></script>
+  <script type="text/javascript" src="js/libs/backbone.min.js"></script>
+
+  <!-- load our scripts -->
+  <script type="text/javascript" src="js/group_router.js"></script>
+  <script type="text/javascript" src="js/models/endpoint.js"></script>
+  <script type="text/javascript" src="js/models/group.js"></script>
+  <script type="text/javascript" src="js/views/endpoint.js"></script>
+  <script type="text/javascript" src="js/views/group.js"></script>
+
+</head>
+<body>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Mesoshub</h1>
+    </div>
+
+    <p class="lead">
+      A simple web ui to manage mesos application endpoints through HAProxy.
+    </p>
+
+    <div class="row">
+      <div class="span12" id="groups-content">
+        <!-- the container that gets populated with the index -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="span12" id="endpoints-content">
+        <!-- the container that gets populated with the index -->
+      </div>
+    </div>
+    <div clsss="row" style="display:none;">
+      <div class="span12">
+            <!-- we are going to debug our backbone collection here -->
+            <code id="output" style="display:block;white-space:pre-wrap;"></code>
+      </div>
+    </div>
+
+  </div>
+  <!-- the form, used for create and edit -->
+  <script type="text/jst" id="formTemplate">
+    <div class="well">
+      <div class="alert alert-danger" style="display:none;"></div>
+      <form role="form">
+        <h2 class="form-signin-heading"></h2>
+        <div class="form-group">
+          <input type="text" class="form-control" name="name" placeholder="Name" value="<%= name %>" />
+        </div>
+        <div class="form-group">
+            <button type="button" id="upbutton"   class="btn btn-default btn-warning">INCREASE</button><br />
+            <input type="text" class="form-control col-md-4" name="port" placeholder="Port" value="<%= port %>" />
+            <button type="button" id="downbutton" class="btn btn-default btn-warning">DECREASE</button><br />
+        </div>
+        <div class="form-group">
+          <%= endpoints_select %>
+        </div>
+        <div class="form-actions">
+          <button class="save btn btn-primary" type="submit">Save</button> or
+          <a href="#groups/index" class="btn btn-default">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </script>
+  <!-- the index container -->
+  <script type="text/template" id="indexTemplate">
+    <div class="well" style="display:block;">
+      <h2>Application Groups</h2>
+      <p>
+        <a class="btn btn-large btn-primary" href="#groups/new">Create New Group</a>
+        <a class="btn btn-large btn-success" href="#groups/save">Commit Groups</a>
+        <span id="spinner" style="display:none;"><img src="img/spinner.gif" /></span>
+      </p>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="20%">Name</th>
+          <th width="20%">Port</th>
+          <th>Apps</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+  <!-- the row template, renders once for each item in the index -->
+  <script type="text/template" id="rowTemplate">
+    <td>
+      <a href="#groups/<%= name %>/edit"><%= name %></a>
+    </td>
+    <td><%= port %></td>
+    <td>
+      <ul class="list-group">
+        <% for (idx in apps) { %>
+        <li class="list-group-item"><%= apps[idx] %></li>
+        <% } %>
+      </ul>
+    </td>
+    <td>
+      <a href="#" class="delete btn btn-danger btn-small">delete</a>
+    </td>
+  </script>
+  <!-- the show template -->
+  <script type="text/template" id="showTemplate">
+    <div class="well">
+      <a class="btn btn-large" href="#groups/index">
+        Back To Index
+      </a>
+      <a class="btn btn-large btn-info" href="#groups/<%= name %>/edit">
+        Edit Group
+      </a>
+    </div>
+    <small>
+      <%= name %>
+      <%= port %>
+      <ul class="list-group">
+        <% for (idx in apps) { %>
+        <li class="list-group-item"><%= apps[idx] %></li>
+        <% } %>
+      </ul>
+    </small>
+  </script>
+
+  <!-- the endpoints container -->
+  <script type="text/template" id="endpointsTemplate">
+    <div class="well"><h2>Application Endpoints</h2></div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="20%">Name</th>
+          <th width="20%">Port</th>
+          <th>Servers</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+  <!-- the row template, renders once for each item in the index -->
+  <script type="text/template" id="endpointrowTemplate">
+    <td><%= name %></td>
+    <td><%= port %></td>
+    <td>
+      <ul class="list-group">
+        <% for (idx in servers) { %>
+        <li class="list-group-item"><%= servers[idx] %></li>
+        <% } %>
+      </ul>
+    </td>
+  </script>
+
+  <script type="text/javascript">
+    window.VAR = {
+      groups: new APP.Collections.Groups(),
+      endpoints: new APP.Collections.Endpoints()
+    };
+
+    VAR.endpoints.fetch();
+    setInterval(function() { VAR.endpoints.fetch() }, 10000);
+
+    VAR.groups.fetch({
+      success:function() {
+        window.VAR.router = new APP.Routers.Groups({groups: VAR.groups, endpoints: VAR.endpoints});
+        Backbone.history.start();
+      }
+    });
+  </script>
+</body>
+</html>
