@@ -31,6 +31,10 @@ module Mesoshub
       #system("sudo /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -sf $(cat /var/run/haproxy.pid)")
     end
 
+    def preview
+      generate_config
+    end
+
     private
     def generate_config
       configuration = [defaults, listen_defaults, listen_groups, listen_apps].join("\n\n")
@@ -73,7 +77,7 @@ listen webui
    option httpclose
    option httplog
    bind 0.0.0.0:80
-   server webui localhost:8080 check weight 80
+   server webui localhost:1337
 
 listen stats
   bind 0.0.0.0:9999
@@ -93,7 +97,7 @@ listen #{group["name"]}
   bind 0.0.0.0:#{group["port"]}
   mode http
   option tcplog
-  option httpchk GET /
+  option httpchk GET /check
   balance leastconn
 EOF
           i = 0
@@ -119,12 +123,12 @@ listen #{endpoint["name"]}
   bind 0.0.0.0:#{endpoint["port"]}
   mode http
   option tcplog
-  option httpchk GET /
+  option httpchk GET /check
   balance leastconn
 EOF
          i = 0
          acum += endpoint["servers"].reduce("") do |a, server|
-           a += "  server #{endpoint["name"]}-#{i} #{server} check \n"
+           a += "  server #{endpoint["name"]}-#{i} #{server} check\n"
            i += 1
            a
          end
