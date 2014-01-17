@@ -17,9 +17,9 @@ class MarathonTest < MiniTest::Unit::TestCase
     response = File.open('test/sample_endpoints')
     stub_request(:get, @marathon.endpoints_url).to_return( {:body => response} )
     assert_equal @marathon.endpoints.class, Array
-    assert_equal @marathon.endpoints.size, 3
+    assert_equal @marathon.endpoints.size, 2
     assert_equal @marathon.endpoints.first,
-      {"name"=> "search_api", "port"=>"19829", "servers"=>["ip-10-30-6-180.us-west-1.compute.internal:31264", "ip-10-30-6-115.us-west-1.compute.internal:31798", "ip-10-30-6-115.us-west-1.compute.internal:31092"]}
+      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]}
   end
 
   def test_endpoints_empty

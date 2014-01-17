@@ -15,17 +15,31 @@ module Mesoshub
       #OpenURI::HTTPError: 404 Not Found
       begin
         tries ||=3
-        ep = open(endpoints_url).read
+        response = open(endpoints_url).read
       rescue Exception => e
         puts "Retrying..."
         sleep 1
         retry unless (tries -= 1).zero?
       end
-      endpoints = ep.split("\n").reduce([]) do |acum, item|
-        parts = item.split(" ")
-        realname = parts[0].split("_")[0..-2].join("_")
-        acum.push({"name" => realname, "port" => parts[1], "servers" => parts[2..-1]})
-        acum
+      #TODO this mapping is temporary for marathon-0.3.0 that include ports as an array.
+      #
+      #[{
+      #   "id": "recommender-1.1.1",
+      #   "instances": [{
+      #     "host": "ip-10-30-6-115.us-west-1.compute.internal",
+      #     "id": "recommender-1.1.1_0-1389916787578",
+      #     "ports": [ 31525 ]
+      #   }],
+      #   "ports": [10522]
+      #}]
+      ep = response.size > 0 ? JSON.load(response) : []
+      endpoints = ep.map do |endpoint|
+        servers = endpoint["instances"].reduce([]) do |acum, server|
+          host_port = "%s:%s" % [ server["host"], server["ports"][0] ]
+          acum.push( host_port)
+          acum
+        end
+        {"name" => endpoint["id"], "port" => endpoint["ports"][0], "servers" => servers}
       end
       endpoints
     end
