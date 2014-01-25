@@ -83,6 +83,7 @@ listen stats
   bind 0.0.0.0:9999
   balance
   mode http
+  stats uri /stats
   stats enable
   stats auth admin:admin
 EOF
