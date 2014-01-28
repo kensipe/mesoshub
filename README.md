@@ -1,11 +1,11 @@
 ```
-                               _           _     
-                              | |         | |    
- _ __ ___   ___  ___  ___  ___| |__  _   _| |__  
-| '_ ` _ \ / _ \/ __|/ _ \/ __| '_ \| | | | '_ \ 
+                               _           _
+                              | |         | |
+ _ __ ___   ___  ___  ___  ___| |__  _   _| |__
+| '_ ` _ \ / _ \/ __|/ _ \/ __| '_ \| | | | '_ \
 | | | | | |  __/\__ \ (_) \__ \ | | | |_| | |_) |
-|_| |_| |_|\___||___/\___/|___/_| |_|\__,_|_.__/ 
-                                                
+|_| |_| |_|\___||___/\___/|___/_| |_|\__,_|_.__/
+
 ```
 
 ## Getting Started
@@ -27,7 +27,9 @@ Usage:
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
-#### Copyright
+#### Contributors
 
-Copyright (c) 2014 Pablo Delgado.
+Mesoshub was written by the team at Opentable, with contributions from the community.
+
+* [Pablo Delgado](https://github.com/pablete)
 
