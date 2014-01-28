@@ -15,7 +15,7 @@ module Mesoshub
       #OpenURI::HTTPError: 404 Not Found
       begin
         tries ||=3
-        response = open(endpoints_url).read
+        response = open(endpoints_url, "Accept" => "application/json").read
       rescue Exception => e
         puts "Retrying..."
         sleep 1
