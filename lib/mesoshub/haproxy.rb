@@ -98,7 +98,7 @@ listen #{group["name"]}
   bind 0.0.0.0:#{group["port"]}
   mode http
   option tcplog
-  option httpchk GET /check
+  option httpchk GET /
   balance leastconn
 EOF
           i = 0
@@ -124,7 +124,7 @@ listen #{endpoint["name"]}
   bind 0.0.0.0:#{endpoint["port"]}
   mode http
   option tcplog
-  option httpchk GET /check
+  option httpchk GET /
   balance leastconn
 EOF
          i = 0
