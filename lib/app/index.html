@@ -15,7 +15,6 @@
   <script type="text/javascript" src="js/models/group.js"></script>
   <script type="text/javascript" src="js/views/endpoint.js"></script>
   <script type="text/javascript" src="js/views/group.js"></script>
-
 </head>
 <body>
 
@@ -95,9 +94,11 @@
   <!-- the row template, renders once for each item in the index -->
   <script type="text/template" id="rowTemplate">
     <td>
-      <a href="#groups/<%= name %>/edit"><%= name %></a>
+      <a href="http://<%= name %>.<%= VAR.haproxy_fqdn %>"><%= name %></a>
     </td>
-    <td><%= port %></td>
+    <td>
+      <a href="http://<%= VAR.haproxy_fqdn %>:<%= port %>"><%= port %></a>
+    </td>
     <td>
       <ul class="list-group">
         <% for (idx in apps) { %>
@@ -106,6 +107,7 @@
       </ul>
     </td>
     <td>
+      <a href="#groups/<%= name %>/edit" class="btn btn-small btn-primary">edit</a>
       <a href="#" class="delete btn btn-danger btn-small">delete</a>
     </td>
   </script>
@@ -146,8 +148,8 @@
   </script>
   <!-- the row template, renders once for each item in the index -->
   <script type="text/template" id="endpointrowTemplate">
-    <td><%= name %></td>
-    <td><%= port %></td>
+    <td><a href="http://<%= name %>.<%= VAR.haproxy_fqdn %>"><%= name %></a></td>
+    <td><a href="http://<%= VAR.haproxy_fqdn %>:<%= port %>"><%= port %></a></td>
     <td>
       <ul class="list-group">
         <% for (idx in servers) { %>
@@ -158,10 +160,15 @@
   </script>
 
   <script type="text/javascript">
-    window.VAR = {
+
+     window.VAR = {
       groups: new APP.Collections.Groups(),
       endpoints: new APP.Collections.Endpoints()
     };
+
+    $.getJSON("/haproxy_fqdn", function(data) {
+       window.VAR["haproxy_fqdn"] = data["haproxy_fqdn"];
+    });
 
     VAR.endpoints.fetch();
     setInterval(function() { VAR.endpoints.fetch() }, 10000);

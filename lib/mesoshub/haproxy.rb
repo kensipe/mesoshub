@@ -2,6 +2,11 @@ module Mesoshub
   class Haproxy
     attr_accessor :endpoints, :endpoints_lookup, :groups
 
+    def initialize
+      @groups = []
+      @endpoints = []
+    end
+
     def update_endpoints(endpoints)
       @endpoints = endpoints
       @endpoints_lookup = endpoints.reduce({}) do |acum, ep|
@@ -15,7 +20,6 @@ module Mesoshub
     end
 
     def write_config
-      raise "add endpoints or groups first" if @endpoints.nil? && @groups.nil?
       system("cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.old")
       File.open("/etc/haproxy/haproxy.cfg", "w") do |file|
         file << generate_config
@@ -37,7 +41,7 @@ module Mesoshub
 
     private
     def generate_config
-      configuration = [defaults, listen_defaults, listen_groups, listen_apps].join("\n\n")
+      configuration = [defaults, listen_defaults, name_based_frontend, listen_groups, listen_apps].join("\n\n")
       configuration
     end
 
@@ -72,13 +76,6 @@ EOF
     def listen_defaults
       return <<EOF
 #DEFAULT APPS
-listen webui
-   mode http
-   option httpclose
-   option httplog
-   bind 0.0.0.0:80
-   server webui localhost:1337
-
 listen stats
   bind 0.0.0.0:9999
   balance
@@ -89,15 +86,59 @@ listen stats
 EOF
     end
 
-    def listen_groups
-      output = groups.each.reduce("#MESOS Application Groups\n") do |acum, group|
+    def name_based_frontend
+      output = <<EOF
+# NAME BASED FRONTEND
+frontend name_based
+   mode http
+   option httpclose
+   option httplog
+   bind 0.0.0.0:80
+   default_backend webui
+EOF
+      #groups
+      output += groups.each.reduce("") do |acum, group|
         #does the endpoint app exist?
         if group["apps"].reject{|g| endpoints_lookup[g]}.size < group["apps"].size
+          safe_group_name = hyphenated(group["name"])
           acum += <<"EOF"
-listen #{group["name"]}
-  bind 0.0.0.0:#{group["port"]}
+   acl is_group_#{safe_group_name} hdr_beg(host) -i #{safe_group_name}.
+   use_backend #{safe_group_name} if is_group_#{safe_group_name}
+EOF
+        end
+        acum
+      end
+
+      #endpoints
+      output += endpoints.each.reduce("") do |acum, endpoint|
+         safe_endpoint_name = hyphenated(endpoint["name"])
+         acum += <<"EOF"
+   acl is_group_#{safe_endpoint_name} hdr_beg(host) -i #{safe_endpoint_name}.
+   use_backend #{safe_endpoint_name} if is_group_#{safe_endpoint_name}
+EOF
+         acum
+      end
+
+      output
+    end
+
+    def listen_groups
+      output = "#MESOSHUB Application Groups"
+      output += groups.each.reduce("") do |acum, group|
+        #does the endpoint app exist?
+        if group["apps"].reject{|g| endpoints_lookup[g]}.size < group["apps"].size
+          safe_group_name = hyphenated(group["name"])
+          acum += <<"EOF"
+
+frontend #{safe_group_name}
+   mode http
+   option httpclose
+   option httplog
+   bind 0.0.0.0:#{group["port"]}
+   default_backend #{safe_group_name}
+
+backend #{safe_group_name}
   mode http
-  option tcplog
   option httpchk GET /
   balance leastconn
 EOF
@@ -114,16 +155,30 @@ EOF
         end
         acum
       end
+      output += <<EOF
+
+backend webui
+  mode http
+  server webui localhost:1337
+EOF
       output
     end
 
     def listen_apps
-      output = endpoints.each.reduce("#MESOS Applications\n") do |acum, endpoint|
+      output = "#MARATHON Application Endpoints\n"
+      output += endpoints.each.reduce("") do |acum, endpoint|
+         safe_endpoint_name = hyphenated(endpoint["name"])
          acum += <<"EOF"
-listen #{endpoint["name"]}
-  bind 0.0.0.0:#{endpoint["port"]}
+
+frontend #{safe_endpoint_name}
+   mode http
+   option httpclose
+   option httplog
+   bind 0.0.0.0:#{endpoint["port"]}
+   default_backend #{safe_endpoint_name}
+
+backend #{safe_endpoint_name}
   mode http
-  option tcplog
   option httpchk GET /
   balance leastconn
 EOF
@@ -138,5 +193,9 @@ EOF
        output
     end
 
+    def hyphenated(text)
+      #From marathon: appnames pattern @FieldPattern(regexp = "^[A-Za-z0-9_.-]+$")
+      text.gsub(".", "-")
+    end
   end
 end

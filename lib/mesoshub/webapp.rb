@@ -9,7 +9,11 @@ module Mesoshub
     set :protection, :except => [:http_origin]
 
     get "/" do
-      redirect '/index.html'
+      send_file File.join(settings.public_folder, 'index.html')
+    end
+
+    get "/haproxy_fqdn" do
+      {"haproxy_fqdn" => settings.haproxy_fqdn}.to_json
     end
 
     post "/events" do
