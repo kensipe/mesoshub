@@ -94,10 +94,10 @@
   <!-- the row template, renders once for each item in the index -->
   <script type="text/template" id="rowTemplate">
     <td>
-      <a href="http://<%= name %>.<%= VAR.haproxy_fqdn %>"><%= name %></a>
+      <a href="http://<%= name %>.<%= VAR.haproxyfqdn %>"><%= name %></a>
     </td>
     <td>
-      <a href="http://<%= VAR.haproxy_fqdn %>:<%= port %>"><%= port %></a>
+      <a href="http://<%= VAR.haproxyfqdn %>:<%= port %>"><%= port %></a>
     </td>
     <td>
       <ul class="list-group">
@@ -148,8 +148,8 @@
   </script>
   <!-- the row template, renders once for each item in the index -->
   <script type="text/template" id="endpointrowTemplate">
-    <td><a href="http://<%= name %>.<%= VAR.haproxy_fqdn %>"><%= name %></a></td>
-    <td><a href="http://<%= VAR.haproxy_fqdn %>:<%= port %>"><%= port %></a></td>
+    <td><a href="http://<%= name %>.<%= VAR.haproxyfqdn %>"><%= name %></a></td>
+    <td><a href="http://<%= VAR.haproxyfqdn %>:<%= port %>"><%= port %></a></td>
     <td>
       <ul class="list-group">
         <% for (idx in servers) { %>
@@ -166,8 +166,8 @@
       endpoints: new APP.Collections.Endpoints()
     };
 
-    $.getJSON("/haproxy_fqdn", function(data) {
-       window.VAR["haproxy_fqdn"] = data["haproxy_fqdn"];
+    $.getJSON("/haproxyfqdn", function(data) {
+       window.VAR["haproxyfqdn"] = data["haproxyfqdn"];
     });
 
     VAR.endpoints.fetch();

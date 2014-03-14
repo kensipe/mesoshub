@@ -12,8 +12,8 @@ module Mesoshub
       send_file File.join(settings.public_folder, 'index.html')
     end
 
-    get "/haproxy_fqdn" do
-      {"haproxy_fqdn" => settings.haproxy_fqdn}.to_json
+    get "/haproxyfqdn" do
+      {"haproxyfqdn" => settings.haproxyfqdn}.to_json
     end
 
     post "/events" do
