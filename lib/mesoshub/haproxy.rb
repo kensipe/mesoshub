@@ -50,8 +50,8 @@ module Mesoshub
 global
   daemon
   spread-checks 2
-  user    ubuntu
-  group   ubuntu
+  user    nobody
+  group   nogroup
   maxconn 8192
   log     127.0.0.1 local1
   stats   socket /var/run/haproxy.sock group ubuntu mode 660 level admin
