@@ -82,7 +82,6 @@ listen stats
   mode http
   stats uri /stats
   stats enable
-  stats auth admin:admin
 EOF
     end
 
