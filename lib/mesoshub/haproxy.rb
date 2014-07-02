@@ -54,7 +54,7 @@ global
   group   nogroup
   maxconn 8192
   log     127.0.0.1 local1
-  stats   socket /var/run/haproxy.sock group ubuntu mode 660 level admin
+  stats   socket /var/run/haproxy.sock group haproxy mode 660 level admin
 
 defaults
   log      global
