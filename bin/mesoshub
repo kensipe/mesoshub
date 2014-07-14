@@ -11,7 +11,7 @@ CONFIG = Trollop::options do
   banner <<-EOS
 Usage: mesoshub --haproxyfqdn host.domain.internal --marathon http://host:port --zookeeper host1:port1,host2:port2
 EOS
-  opt :haproxyfqdn, "HAProxy fqdn",           :type => :string
+  opt :haproxyfqdn,  "HAProxy fqdn",           :type => :string
   opt :marathon,     "Marathon URL",           :type => :string
   opt :zookeeper,    "Zookeeper hosts string", :type => :string
 end
