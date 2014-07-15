@@ -10,11 +10,35 @@
 
 ## Getting Started
 
+### Prerequisites
+Ruby 2.1.2. Please see the section below if you need help getting this set up.
+
 ### Running mesoshub
+
 Run mesoshub with marathon url and zookeeper hosts
 Usage:
 
       shell> bin/mesoshub --marathon http://vpc0-mesos-master01.otsql.opentable.com:8080 --zookeeper vpc0-mesos-master01.otsql.opentable.com:2181,vpc0-mesos-master02.otsql.opentable.com:2181,vpc0-mesos-master03.otsql.opentable.com:2181
+
+### Setting up Ruby
+If you use [rbenv](http://rbenv.org/), then update that, and [ruby-build](https://github.com/sstephenson/ruby-build) to their latest versions. With [homebrew](http://brew.sh/) that would be:
+
+    shell> brew update && brew install rbenv && brew install ruby-build
+    --OR, if they're already installed--
+    shell> brew update && brew upgrade rbenv && brew upgrade ruby-build
+
+Then, to install Ruby 2.1.2:
+
+    shell> rbenv install 2.1.2
+
+Then, to install dependencies:
+
+    shell> gem install bundler
+    shell> cd mesoshub
+    shell> bundle install
+    shell> rbenv rehash
+
+Now you can run mesoshub using the instructions above.
 
 
 #### Contributing to mesoshub
