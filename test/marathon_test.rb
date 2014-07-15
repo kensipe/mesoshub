@@ -9,22 +9,38 @@ class MarathonTest < MiniTest::Unit::TestCase
     @marathon = Mesoshub::Marathon.new(@url)
   end
 
-  def test_endpoints_url
-    assert_equal @marathon.endpoints_url, "http://marathon.url:8080/v1/endpoints"
+  def test_apps_url
+    assert_equal @marathon.apps_url, "http://marathon.url:8080/v2/apps"
+  end
+
+  def test_tasks_url
+    assert_equal @marathon.tasks_url, "http://marathon.url:8080/v2/tasks"
   end
 
   def test_endpoints_success
-    response = File.open('test/sample_endpoints')
-    stub_request(:get, @marathon.endpoints_url).to_return( {:body => response} )
-    assert_equal @marathon.endpoints.class, Array
-    assert_equal @marathon.endpoints.size, 2
-    assert_equal @marathon.endpoints.first,
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]}
+    tasks_response = File.open('test/sample_tasks')
+    stub_request(:get, @marathon.tasks_url).to_return( {:body => tasks_response} )
+    apps_response = File.open('test/sample_apps')
+    stub_request(:get, @marathon.apps_url).to_return( {:body => apps_response} )
+    assert_equal Array, @marathon.endpoints.class
+    assert_equal 10,    @marathon.endpoints.size
+
+    first_endpoint = {"name"=>"apns-deploy-00022", "health_path"=>"/", "port"=>14924, "servers"=>["10.30.6.170:31872"]}
+    assert_equal first_endpoint, @marathon.endpoints.first
   end
 
-  def test_endpoints_empty
-    stub_request(:get, @marathon.endpoints_url).to_return( {:body => ""} )
-    assert_equal @marathon.endpoints, []
+  def test_endpoints_empty_withoutapps
+    tasks_response = File.open('test/sample_tasks')
+    stub_request(:get, @marathon.tasks_url).to_return( {:body => tasks_response} )
+    stub_request(:get, @marathon.apps_url).to_return( {:body => ""} )
+    assert_equal [], @marathon.endpoints
+  end
+
+  def test_endpoints_servers_empty_withouttasks
+    stub_request(:get, @marathon.tasks_url).to_return( {:body => ""} )
+    apps_response = File.open('test/sample_apps')
+    stub_request(:get, @marathon.apps_url).to_return( {:body => apps_response} )
+    assert_equal [], @marathon.endpoints.select {|a| !a["servers"].empty?}
   end
 
 end
