@@ -11,7 +11,7 @@
 ## Getting Started
 
 ### Prerequisites
-Ruby 2.1.2. Please see the section below if you need help getting this set up.
+Ruby 1.9.3p484 (this is the version used in productiion). Please see the section below if you need help getting this set up.
 
 ### Running mesoshub
 
@@ -27,9 +27,9 @@ If you use [rbenv](http://rbenv.org/), then update that, and [ruby-build](https:
     --OR, if they're already installed--
     shell> brew update && brew upgrade rbenv && brew upgrade ruby-build
 
-Then, to install Ruby 2.1.2:
+Then, to install Ruby 1.9.3p484:
 
-    shell> rbenv install 2.1.2
+    shell> rbenv install 1.9.3p484
 
 Then, to install dependencies:
 
