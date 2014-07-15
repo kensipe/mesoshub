@@ -9,8 +9,8 @@ class HaproxyTest < MiniTest::Unit::TestCase
 
   def test_endpoints_listen_apps
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala", "health_path"=> "/health", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     haproxy = Mesoshub::Haproxy.new
     haproxy.update_endpoints(endpoints)
@@ -27,8 +27,8 @@ frontend recommender-1-1-1
 
 backend recommender-1-1-1
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server recommender-1.1.1-0 ip-10-30-6-115.us-west-1.compute.internal:31525 check
 
 frontend hello-scala
@@ -40,8 +40,8 @@ frontend hello-scala
 
 backend hello-scala
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server hello-scala-0 ip-10-30-6-115.us-west-1.compute.iternal:31480 check
   server hello-scala-1 ip-10-30-6-180.us-west-1.compute.internal:31304 check
 EOF
@@ -49,8 +49,8 @@ EOF
 
   def test_name_based_frontend
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala", "health_path" => "/health", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     haproxy = Mesoshub::Haproxy.new
     haproxy.update_endpoints(endpoints)
@@ -72,8 +72,8 @@ EOF
 
   def test_endpoints_and_groups_listen_groups
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala","health_path" => "/health","port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     groups = [
       {"name"=>"demo", "port"=>50001, "apps"=>["hello-scala"]},
@@ -94,8 +94,8 @@ frontend demo
 
 backend demo
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server hello-scala-0 ip-10-30-6-115.us-west-1.compute.iternal:31480 check weight 1
   server hello-scala-1 ip-10-30-6-180.us-west-1.compute.internal:31304 check weight 1
 
@@ -108,8 +108,8 @@ frontend recommender
 
 backend recommender
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server recommender-1.1.1-0 ip-10-30-6-115.us-west-1.compute.internal:31525 check weight 1
 
 backend webui
@@ -120,8 +120,8 @@ EOF
 
   def test_name_based_frontend_with_groups
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala", "health_path" => "/health", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     groups = [
       {"name"=>"demo", "port"=>50001, "apps"=>["hello-scala"]},
@@ -152,8 +152,8 @@ EOF
 
   def test_endpoints_and_groups_listen_groups_when_endpoint_gone
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala", "health_path" => "/health", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     groups = [
       {"name"=>"demo", "port"=>50001, "apps"=>["hello-scala"]},
@@ -174,8 +174,8 @@ frontend demo
 
 backend demo
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server hello-scala-0 ip-10-30-6-115.us-west-1.compute.iternal:31480 check weight 1
   server hello-scala-1 ip-10-30-6-180.us-west-1.compute.internal:31304 check weight 1
 
@@ -188,8 +188,8 @@ frontend recommender
 
 backend recommender
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server recommender-1.1.1-0 ip-10-30-6-115.us-west-1.compute.internal:31525 check weight 1
 
 backend webui
@@ -200,8 +200,8 @@ EOF
 
   def test_endpoints_and_groups_listen_groups_when_endpoint_nonexistent
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala", "health_path" => "/health", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     groups = [
       {"name"=>"demo", "port"=>50001, "apps"=>["hello-scala"]},
@@ -222,8 +222,8 @@ frontend demo
 
 backend demo
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET /health
+  balance roundrobin
   server hello-scala-0 ip-10-30-6-115.us-west-1.compute.iternal:31480 check weight 1
   server hello-scala-1 ip-10-30-6-180.us-west-1.compute.internal:31304 check weight 1
 
@@ -235,8 +235,8 @@ EOF
 
   def test_name_based_frontend_with_groups_when_endpoint_nonexistent
     endpoints = [
-      {"name"=>"recommender-1.1.1", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
-      {"name"=>"hello-scala", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
+      {"name"=>"recommender-1.1.1", "health_path" => "/health", "port"=>10522, "servers"=>["ip-10-30-6-115.us-west-1.compute.internal:31525"]},
+      {"name"=>"hello-scala", "health_path" => "/health", "port"=>10487, "servers"=>["ip-10-30-6-115.us-west-1.compute.iternal:31480", "ip-10-30-6-180.us-west-1.compute.internal:31304"]}
     ]
     groups = [
       {"name"=>"demo", "port"=>50001, "apps"=>["hello-scala"]},

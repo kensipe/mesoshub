@@ -1,5 +1,8 @@
 module Mesoshub
   class Haproxy
+
+    BALANCE_ALGORITHM = "roundrobin" # OR "leastconn"
+
     attr_accessor :endpoints, :endpoints_lookup, :groups
 
     def initialize
@@ -10,7 +13,7 @@ module Mesoshub
     def update_endpoints(endpoints)
       @endpoints = endpoints
       @endpoints_lookup = endpoints.reduce({}) do |acum, ep|
-        acum[ep["name"]] = {"port" => ep["port"], "servers" => ep["servers"]}
+        acum[ep["name"]] = {"port" => ep["port"], "servers" => ep["servers"], "health_path" => ep["health_path"]}
         acum
       end
     end
@@ -69,7 +72,6 @@ defaults
   timeout  server  50s
   option   redispatch
   retries  3
-  balance  roundrobin
 EOF
     end
 
@@ -127,6 +129,7 @@ EOF
         #does the endpoint app exist?
         if group["apps"].reject{|g| endpoints_lookup[g]}.size < group["apps"].size
           safe_group_name = hyphenated(group["name"])
+          group_health_path = endpoints_lookup[group["apps"][0]]["health_path"]
           acum += <<"EOF"
 
 frontend #{safe_group_name}
@@ -138,8 +141,8 @@ frontend #{safe_group_name}
 
 backend #{safe_group_name}
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET #{group_health_path}
+  balance #{BALANCE_ALGORITHM}
 EOF
           i = 0
           group["apps"].each do |name|
@@ -178,8 +181,8 @@ frontend #{safe_endpoint_name}
 
 backend #{safe_endpoint_name}
   mode http
-  option httpchk GET /
-  balance leastconn
+  option httpchk GET #{endpoint["health_path"]}
+  balance #{BALANCE_ALGORITHM}
 EOF
          i = 0
          acum += endpoint["servers"].reduce("") do |a, server|
