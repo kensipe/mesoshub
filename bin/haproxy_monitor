@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+SLEEP_TIME = 10
+MATCH_PROCESS = "/usr/sbin/haproxy"
+
+class HaproxyMonitor
+  def self.start
+    puts "#{Time.now} / Starting Haproxy Monitor Daemon"
+
+    loop do
+      begin
+        haproxy_pid=`cat /var/run/haproxy.pid`.chomp
+        lines = `ps -e -www -o pid,rss,command | grep '#{MATCH_PROCESS}'`.split("\n")
+        lines.each do |line|
+          parts = line.split(' ')
+          next if parts[0] == haproxy_pid || parts[2] != MATCH_PROCESS
+          puts "#{Time.now} / Killing old haproxy instance with pid #{parts[0].to_i}"
+          ::Process.kill('TERM', parts[0].to_i)
+        end
+      rescue Exception => e
+        puts "#{Time.now} / Got error: #{e.message}"
+      end
+      sleep(SLEEP_TIME)
+    end
+  end
+
+  def self.stop
+    puts "#{Time.now} / Stopping Haproxy Monitor Daemon"
+  end
+end
+
+HaproxyMonitor.start
