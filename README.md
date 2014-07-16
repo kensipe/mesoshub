@@ -11,14 +11,14 @@
 ## Getting Started
 
 ### Prerequisites
-Ruby 1.9.3p484 (this is the version used in productiion). Please see the section below if you need help getting this set up.
+Ruby 1.9.3-p484 (this is the version used in productiion). Please see the section below if you need help getting this set up.
 
 ### Running mesoshub
 
 Run mesoshub with marathon url and zookeeper hosts
 Usage:
 
-      shell> bin/mesoshub --marathon http://vpc0-mesos-master01.otsql.opentable.com:8080 --zookeeper vpc0-mesos-master01.otsql.opentable.com:2181,vpc0-mesos-master02.otsql.opentable.com:2181,vpc0-mesos-master03.otsql.opentable.com:2181
+      shell> bin/mesoshub --haproxyfqdn proxy.domain --marathon http://master1.domain:8080 --zookeeper master1.domain:2181,master2.domain:2181,master3.domain:2181
 
 ### Setting up Ruby
 If you use [rbenv](http://rbenv.org/), then update that, and [ruby-build](https://github.com/sstephenson/ruby-build) to their latest versions. With [homebrew](http://brew.sh/) that would be:
@@ -27,9 +27,9 @@ If you use [rbenv](http://rbenv.org/), then update that, and [ruby-build](https:
     --OR, if they're already installed--
     shell> brew update && brew upgrade rbenv && brew upgrade ruby-build
 
-Then, to install Ruby 1.9.3p484:
+Then, to install Ruby 1.9.3-p484:
 
-    shell> rbenv install 1.9.3p484
+    shell> rbenv install 1.9.3-p484
 
 Then, to install dependencies:
 
@@ -56,4 +56,5 @@ Now you can run mesoshub using the instructions above.
 Mesoshub was written by the team at Opentable, with contributions from the community.
 
 * [Pablo Delgado](https://github.com/pablete)
-
+* [Steven Schlansker](https://github.com/stevenschlansker)
+* [Sam Salisbury](https://github.com/samsalisbury)
