@@ -32,13 +32,22 @@ module Mesoshub
         health_path = app["healthChecks"].empty? ? DEFAULT_HEALTH_PATH : app["healthChecks"].reduce(DEFAULT_HEALTH_PATH)  {|acum,item| acum = item["path"] if item["protocol"]=="HTTP"; acum}
         app_port = app["ports"][DEFAULT_PORT_INDEX]
         srvs = servers[app["id"]].nil? ? [] : servers[app["id"]]
-        {"name" => app["id"], "health_path" => health_path, "port" => app_port, "servers" => srvs}
+        safe_app_id = safe_chars(app["id"])
+        {"name" => safe_app_id, "health_path" => health_path, "port" => app_port, "servers" => srvs}
       end
 
      endpoints
     end
 
     private
+
+      # converts /something => something
+      # converts a/b/c/app =>  a-b-c-app
+      def safe_chars(name)
+        newname = name[0] == "/" ? name[1..-1] : name
+        newname.gsub("/", "-")
+      end
+
       def open_with_retry(url)
         #TODO RESCUE
         #SocketError: getaddrinfo: nodename nor servname provided, or not known
