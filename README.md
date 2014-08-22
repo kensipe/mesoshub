@@ -23,6 +23,7 @@ Usage:
 ### Running on Vagrant
 You can run mesoshub with the provided mesosphere mesoscon.box
 
+    sudo echo '10.141.141.10  proxy.domain' >> /etc/hosts
     vagrant up
     vagrant ssh
     cd mesoshub
