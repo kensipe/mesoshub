@@ -20,6 +20,15 @@ Usage:
 
       shell> bin/mesoshub --haproxyfqdn proxy.domain --marathon http://master1.domain:8080 --zookeeper master1.domain:2181,master2.domain:2181,master3.domain:2181
 
+### Running on Vagrant
+You can run mesoshub with the provided mesosphere mesoscon.box
+
+    vagrant up
+    vagrant ssh
+    cd mesoshub
+    bundle
+    sudo bin/mesoshub --haproxyfqdn proxy.domain --marathon http://localhost:8080 --zookeeper localhost:2181
+
 ### Setting up Ruby
 If you use [rbenv](http://rbenv.org/), then update that, and [ruby-build](https://github.com/sstephenson/ruby-build) to their latest versions. With [homebrew](http://brew.sh/) that would be:
 
